@@ -16,7 +16,8 @@ class ViewController: UIViewController {
 //        concurrentQueue()
 //        testDeadlock1()
 //        testDeadlock2()
-        dispathAfter()
+//        dispathAfter()
+        testDispathGroup()
     }
     
     
@@ -65,6 +66,39 @@ class ViewController: UIViewController {
                 print("Concurrent: \(count)")
                 count += 1
             }
+        }
+    }
+    
+    func testDispathGroup() {
+        let dispatchGroup = DispatchGroup()
+        
+        let queue1 = DispatchQueue(label: "queue1", attributes: [.concurrent])
+        let queue2 = DispatchQueue(label: "queue2", attributes: [.concurrent])
+        
+        let work1 = DispatchWorkItem {
+            sleep(1)
+            print("task 1 done")
+            dispatchGroup.leave()
+        }
+        
+        let work2 = DispatchWorkItem {
+            sleep(2)
+            print("task 2 done")
+            dispatchGroup.leave()
+        }
+        
+        dispatchGroup.enter()
+        queue1.async(execute: work1)
+        
+        dispatchGroup.enter()
+        queue2.async(execute: work2)
+        
+        // wait 5s
+        let result = dispatchGroup.wait(timeout: .now() + 5)
+        if result == .success {
+            print("success in 5s")
+        } else {
+            print("Failed in 5s")
         }
     }
 }
